@@ -3,6 +3,12 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+#The data files that are stored in the data folder
+data/
+
+#The .DS_Store files that are created by Mac OS X Finder
+.DS_Store
+
 # C extensions
 *.so
 
