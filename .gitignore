@@ -6,6 +6,9 @@ __pycache__/
 #The data files that are stored in the data folder
 data/
 
+#The images that are stored in the images folder
+images/
+
 #The .DS_Store files that are created by Mac OS X Finder
 .DS_Store
 
