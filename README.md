@@ -106,7 +106,7 @@ If the Notebook doesn't load through Github please try all of these steps:
 Since Plotly Express maps are not compiled well through NBViewer or Github, we recommend downloading the Notebook for a better visualization. If this isn't within your scope, we added a screenshot of the plot included in `main.ipynb`:
 
 <p align="center">
-    <img src="https://drive.google.com/uc?export=view&id=1wZGgqas_bm-nRbe2tS0nEXHwfLrqbVSg" width="600" height="300"/>
+    <img src="https://drive.google.com/uc?export=view&id=1wZGgqas_bm-nRbe2tS0nEXHwfLrqbVSg" width="800" height="400"/>
 </p>
 ---
 
