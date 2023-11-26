@@ -7,7 +7,7 @@ This is a Github repository created to submit the third Homework of the **Algori
 
 1. `README.md`: A markdown file that explains the content of the repository.
 
-2. `main.ipynb`: A Jupyter Notebook file containing all the relevant exercises and reports belonging to the homework questions, the *Command Line Question*, and the *Algorithmic Question*.
+2. `main.ipynb`: A [Jupyter Notebook](https://nbviewer.org/github/msancor/ADM-HW3/blob/main/main.ipynb) file containing all the relevant exercises and reports belonging to the homework questions, the *Command Line Question*, and the *Algorithmic Question*.
 
 3. ``modules/``: A folder including 4 Python modules used to solve the exercises in `main.ipynb`. The files included are:
 
@@ -93,14 +93,6 @@ In order to gain access to these API's we had to create accounts and obtain **AP
     and write your API keys in the other side of the equal sign.
 
 
-## Important Note
-
-If the Notebook doesn't load through Github please try all of these steps:
-
-1. Try compiling the Notebook through its [NBViewer](https://nbviewer.org/github/msancor/ADM-HW3/blob/main/main.ipynb).
-
-2. Try downloading the Notebook and opening it in your local computer.
-
 ## Plots
 
 Since Plotly Express maps are not compiled well through NBViewer or Github, we recommend downloading the Notebook for a better visualization. If this isn't within your scope, we added a screenshot of the plot included in `main.ipynb`:
@@ -110,6 +102,14 @@ Since Plotly Express maps are not compiled well through NBViewer or Github, we r
 </p>
 
 However, this plot is made to be interactive so it is still recommended to visualize it in your own computer.
+
+## Important Note
+
+If the Notebook doesn't load through Github please try all of these steps:
+
+1. Try compiling the Notebook through its [NBViewer](https://nbviewer.org/github/msancor/ADM-HW3/blob/main/main.ipynb).
+
+2. Try downloading the Notebook and opening it in your local computer.
 
 ---
 
