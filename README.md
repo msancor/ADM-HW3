@@ -97,11 +97,10 @@ In order to gain access to these API's we had to create accounts and obtain **AP
 
 If the Notebook doesn't load through Github please try all of these steps:
 
-1. Try compiling the Notebook through its NBViewer.
+1. Try compiling the Notebook through its [NBViewer](https://nbviewer.org/github/msancor/ADM-HW3/blob/main/main.ipynb).
 
 2. Try downloading the Notebook and opening it in your local computer.
 
-3. Try opening it through Google Colab through the following link.
 
 **NOTE:** Since Plotly Express maps are not compiled well through NBViewer or Github, we recommend downloading the Notebook for a better visualization.
 
