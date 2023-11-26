@@ -64,13 +64,12 @@ class DataPreprocesser():
         #Finally, we return None since we are modifying the dataframe in place.
         return None
 
-    def preprocess_text_column(self, column_name: str = "description", new_column_name: str = "description (PROCESSED)") -> None:
+    def preprocess_text_column(self, column_name: str = "description") -> None:
         """
-        Function that processes the dataframe's text columns to a processed text column.
+        Function that processes the dataframe's text column to a processed text column.
 
         Args:
-            columns_names (List[str]): List of names of the text columns.
-            new_columns_names (List[str]): List of names of the new processed text columns.
+            columns_name (str, optional): Name of the text column. Defaults to "description".
 
         Returns:
             None: None.
@@ -79,7 +78,7 @@ class DataPreprocesser():
         self.dataset[column_name] = self.dataset[column_name].fillna("")
         #Now, we create a new column with the processed text by applying the __get_processed_text function to the text column.
         #The __get_processed_text function returns the processed text of the text column.
-        self.dataset[new_column_name] = self.dataset[column_name].apply(self.get_processed_text)
+        self.dataset[f"{column_name} (PROCESSED)"] = self.dataset[column_name].apply(self.get_processed_text)
 
         #Finally, we return None since we are modifying the dataframe in place.
         return None
@@ -398,7 +397,7 @@ class DataPreprocesser():
 
         etc. (https://www.ling.upenn.edu/courses/Fall_2003/ling001/penn_treebank_pos.html)
 
-        NB: This function was not written by me. It was taken and modified from the following StackOverflow answer:
+        NB: Part of this function was not written by me. It was taken and modified from the following StackOverflow answer:
         https://stackoverflow.com/questions/15586721/wordnet-lemmatization-and-pos-tagging-in-python
 
         This was done because it is a very common solution to convert Penn Treebank tags to WordNet tags 

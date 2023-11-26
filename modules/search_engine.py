@@ -11,18 +11,27 @@ import heapq
 import os
 
 """
-This module contains the SearchEngine class that implements a search engine for the dataset. The Search Engine class has the following methods:
-    
-    - query(query_text: str) -> pd.DataFrame: Function that queries the dataset.
+This module contains three classes that implement a search engine for the dataset. The three classes are the following:
+
+    - SearchEngine: Class that implements a search engine for the dataset. It implements a conjunctive query i.e. it returns the documents that contain ALL the words in the query sorted by index.
+    - TopKSearchEngine: Class that implements a search engine for the dataset. This Search Engine inherits from the SearchEngine class in order to sort the results of the query by their cosine similarity with the query.
+    - WeightedTopKSearchEngine: Class that implements a search engine for the dataset. This Search Engine inherits from the TopKSearchEngine class in order to sort the results of the query by a custom weighted cosine similarity with the query.
 
 """
 
 class SearchEngine():
     """
-    Class that implements a search engine for the dataset. The Search Engine class has the following class variables:
+    Class that implements a search engine for the dataset. It implements a conjunctive query i.e. it returns the documents that contain ALL the words in the query sorted by index.
+    The Search Engine class has the following class variables:
+        
         - COLUMN_TO_QUERY (str): Column of the dataset to query.
 
+    The Search Engine class has the following class methods:
+
+        - query(query_text: str) -> pd.DataFrame: Function that queries the dataset and returns the documents that contain ALL the words in the query sorted by index.
+
     """
+    #Here we define the column of the dataset to query
     COLUMN_TO_QUERY = "description"
 
     def __init__(self, processed_dataset: pd.DataFrame):
@@ -42,7 +51,7 @@ class SearchEngine():
 
     def query(self, query_text: str) -> pd.DataFrame:
         """
-        Function that queries the dataset.
+        Function that queries the dataset and returns the documents that contain ALL the words in the query sorted by index.
 
         Args:
             query (str): Query to be searched in the dataset.
@@ -99,7 +108,10 @@ class SearchEngine():
         Returns:
             intersection (List[int]): Intersection of the lists in the list of lists.
         """
+        #We get the intersection of the lists in the list of lists. We do this by using the set intersection method
         intersection = list(set(documents_index[0]).intersection(*documents_index))
+
+        #We return the intersection
         return intersection
 
     def __get_vocabulary(self) -> Dict[str, int]:
@@ -227,8 +239,9 @@ class SearchEngine():
             else:
                 #Here we split the document into word tokens
                 for word in text.split(","):
-                    #Here we add the index of the document to the inverted index for each word token
-                    inverted_index[self.vocabulary[word]].append(i)
+                    #Here we add the index of the document to the inverted index for each word token only if it is not already in the list
+                    if i not in inverted_index[self.vocabulary[word]]:
+                        inverted_index[self.vocabulary[word]].append(i)
 
         #Finally we save it to a file
         with open(f"data/{self.COLUMN_TO_QUERY}_inverted_index.pickle", "wb") as f:
@@ -259,8 +272,13 @@ class TopKSearchEngine(SearchEngine):
     The Search Engine class has the following class variables:
 
         - COLUMN_TO_QUERY (str): Column of the dataset to query.
-        - TOP_K (int): Number of results to return.
+        - K (int): Number of results to return.
+
+    The Search Engine class has the following class methods:
+    
+            - query(query_text: str) -> pd.DataFrame: Function that queries the dataset and returns the documents that contain ALL the words in the query sorted by their cosine similarity with the query.
     """
+    #Here we define the number of results to return
     K = 5
 
     def __init__(self, processed_dataset: pd.DataFrame):
@@ -272,9 +290,12 @@ class TopKSearchEngine(SearchEngine):
         """
         #We initialize the parent class
         super().__init__(processed_dataset)
-        #Here we overwrite the inverted index to be the idtf inverted index
-        self.tfIdf_vectorizer = TfidfVectorizer(stop_words = [], token_pattern=r"(?u)\b\w+\b", vocabulary=self.vocabulary)
+        #First we obtain the tfIdf matrix of the dataset. We do this because the tfIdf matrix contains the idf values of the words in the vocabulary
         self.tfIdf_matrix = self.__get_tfIdf_matrix()
+        #To do this we needed to initialize a tfIdf vectorizer with the vocabulary of the dataset in order to get the tfIdf matrix
+        #The token pattern is set to r"(?u)\b\w+\b" in order to get the same tokens as the DataPreprocesser class
+        self.tfIdf_vectorizer = TfidfVectorizer(stop_words = [], token_pattern=r"(?u)\b\w+\b", vocabulary=self.vocabulary)
+        #Here we overwrite the inverted index to be the idtf inverted index i.e. a dictionary with the index of the word as keys and a list of tuples of the index of the documents and the idtf values as values
         self.inverted_index = self.__get_tfIdf_inverted_index()
 
     def __get_tfIdf_inverted_index(self) -> Dict[int, List[Tuple[int, float]]]:
@@ -326,8 +347,9 @@ class TopKSearchEngine(SearchEngine):
             else:
                 #Here we split the document into word tokens
                 for word in text.split(","):
-                    #Here we add the index of the document to the inverted index for each word token
-                    inverted_index[self.vocabulary[word]].append((i, tfIdf_matrix[i, self.vocabulary[word]]))
+                    #Here we add the index of the document to the inverted index for each word token only if it is not already in the list
+                    if (i, tfIdf_matrix[i, self.vocabulary[word]]) not in inverted_index[self.vocabulary[word]]:
+                        inverted_index[self.vocabulary[word]].append((i, tfIdf_matrix[i, self.vocabulary[word]]))
 
         #Finally we save it to a file
         with open(f"data/{self.COLUMN_TO_QUERY}_tfIdf_inverted_index.pickle", "wb") as f:
@@ -390,9 +412,12 @@ class TopKSearchEngine(SearchEngine):
         Returns:
             intersection (List[int]): Intersection of the lists in the list of lists.
         """
+        #Here we get only the first element of the tuple i.e. the index of the document
         documents_index = [[tup[0] for tup in inner_list] for inner_list in documents_index]
-        #We have to take into account only the first element of the tuple i.e. the index of the document
+        #Now we get the intersection of the lists in the list of lists. We do this by using the set intersection method
         intersection = intersection = list(set(documents_index[0]).intersection(*documents_index))
+
+        #We return the intersection
         return intersection
     
     def _sorted_result(self, documents_index: List[int], query_text: List[str]) -> pd.DataFrame:
@@ -408,10 +433,10 @@ class TopKSearchEngine(SearchEngine):
             pd.DataFrame: Sorted results of a query.
         """
         #First, we get the cosine similarity between the query and the documents
-        cosine_similarity = self.__get_cosine_similarity(documents_index, query_text)
+        similarity = self._get_similarity(documents_index, query_text)
 
         #Now we get the top K results
-        topK_results, topK_sim = self.__get_top_k_results(cosine_similarity, documents_index)
+        topK_results, topK_sim = self.__get_top_k_results(similarity, documents_index)
 
         #Here we create a copy of our dataset
         result_dataset = self.dataset.copy()
@@ -425,7 +450,7 @@ class TopKSearchEngine(SearchEngine):
         #Finally we return the results sorted by index
         return result_dataset
     
-    def __get_cosine_similarity(self, documents_index: List[int], query_text: List[str]) -> np.ndarray:
+    def _get_similarity(self, documents_index: List[int], query_text: List[str]) -> np.ndarray:
         """
         Function that gets the cosine similarity between the query and the documents.
 
@@ -434,7 +459,7 @@ class TopKSearchEngine(SearchEngine):
             query_text (List[str]): Query tokens.
 
         Returns:
-            cosine_similarity (np.ndarray): Cosine similarity between the query and the documents.
+            similarity (np.ndarray): Cosine similarity between the query and the documents.
         """
         #We get the tfIdf vector of the query
         query_tfIdf_vector = self.tfIdf_vectorizer.fit_transform([",".join(query_text)])
@@ -448,19 +473,120 @@ class TopKSearchEngine(SearchEngine):
         #We return the cosine similarity
         return similarity
     
-    def __get_top_k_results(self, cosine_similarity: np.ndarray, documents_index: List[int]) -> Tuple[List[int], List[float]]:
+    def __get_top_k_results(self, similarity: np.ndarray, documents_index: List[int]) -> Tuple[List[int], List[float]]:
+        """
+        Function that gets the top k results of a query and their similarity values.
+
+        Args:
+            similarity (np.ndarray): Similarity measure between the query and the documents.
+            documents_index (List[int]): Index of the documents that contain ALL the words in the query.
+
+        Returns:
+            documents_list (List[int]): List of the top k documents.
+            sim_list (List[float]): List of the similarity values of the top k documents.
+        """
 
         #First we make a list of tuples where the first element is the cosine similarity and the second element is the document index
         #It is important to note that we multiply the cosine similarity values with -1 in order to build a max heap since the heapq package builds a min heap
-        cosine_heap = list(zip((-1)*cosine_similarity, documents_index))
-        heapq.heapify(cosine_heap)
+        similarity_heap = list(zip((-1)*similarity, documents_index))
+
+        #Now we build the max heap using the heapiify function. 
+        heapq.heapify(similarity_heap)
 
         #Here we create a list to store the sorted top k results
-        documents_list, cosine_sim_list = [], []
+        documents_list, sim_list = [], []
 
+        #Now we get the top k results. We do this by popping the first element of the heap k times since the first element of the heap is the maximum value
+        #We obtain the first k results if they exist, if not, we obtain the ones that exist. To do this we take the minimum between k and the length of the heap
         for _ in range(min(self.K, len(documents_index))):
-            cosine_sim, document = heapq.heappop(cosine_heap)
-            cosine_sim_list.append((-1)*cosine_sim)
+            #Here we pop the first element of the heap and obtain the cosine similarity and the document index
+            sim, document = heapq.heappop(similarity_heap)
+            #Here we append the cosine similarity (multiplied by -1 to obtain the original value) and the document index to the lists
+            sim_list.append((-1)*sim)
             documents_list.append(document)
 
-        return documents_list, cosine_sim_list
+        #Finally we return the top k results and their similarity values
+        return documents_list, sim_list
+
+class WeightedTopKSearchEngine(TopKSearchEngine):
+    """
+    Class that implements a search engine for the dataset. This Search Engine inherits from the TopKSearchEngine class in order to sort the results of the query by a custom weighted cosine similarity with the query.
+    The Search Engine class has the following class variables:
+
+        - COLUMN_TO_QUERY (str): Column of the dataset to query.
+        - K (int): Number of results to return.
+
+    The Search Engine class has the following class methods:
+        
+        - query(query_text: str) -> pd.DataFrame: Function that queries the dataset and returns the documents that contain ALL the words in the query sorted by a custom weighted cosine similarity with the query.
+    """
+
+    def __init__(self, processed_dataset: pd.DataFrame):
+        """
+        Function that initializes the class.
+
+        Args:
+            processed_dataset (pd.DataFrame): Processed dataset i.e. the dataset after applying the DataPreprocesser class.
+        """
+        #We initialize the parent class
+        super().__init__(processed_dataset)
+
+    def _get_similarity(self, documents_index: List[int], query_text: List[str]) -> np.ndarray:
+        """
+        Function that calculates a weighted cosine similarity between the query and the documents. The formula is the following:
+        weighted_cosine_similarity = (1/9)*(cosine_similarity(query, description) + cosine_similarity(query, courseName) + cosine_similarity(query, facultyName)) 
+                                    + (1/9)*(cosine_similarity(query, universityName) + cosine_similarity(query, city) + cosine_similarity(query, country))
+        Args:
+            documents_index (List[int]): Index of the documents that contain ALL the words in the query.
+            query_text (List[str]): Query tokens.
+
+        Returns:
+            similarity (np.ndarray): Cosine similarity between the query and the documents.
+        """
+        #First we get the tfIdf vector of the query
+        query_tfIdf_vector = self.tfIdf_vectorizer.fit_transform([",".join(query_text)])
+
+        #We get the tfIdf matrix of the description for the documents contained in the documents_index
+        tfIdf_description_matrix = self.tfIdf_matrix[documents_index]
+        #We get the tfIdf matrix of the courseName for the documents contained in the documents_index
+        tfIdf_courseName_matrix = self.__get_column_tfIdf_matrix(documents_index, "courseName (PROCESSED)")
+        #We get the tfIdf matrix of the facultyName for the documents contained in the documents_index
+        tfIdf_facultyName_matrix = self.__get_column_tfIdf_matrix(documents_index, "facultyName (PROCESSED)")
+        #We get the tfIdf matrix of the universityName for the documents contained in the documents_index
+        tfIdf_universityName_matrix = self.__get_column_tfIdf_matrix(documents_index, "universityName (PROCESSED)")
+        #We get the tfIdf matrix of the city for the documents contained in the documents_index
+        tfIdf_city_matrix = self.__get_column_tfIdf_matrix(documents_index, "city (PROCESSED)")
+        #We get the tfIdf matrix of the country for the documents contained in the documents_index
+        tfIdf_country_matrix = self.__get_column_tfIdf_matrix(documents_index, "country (PROCESSED)")
+
+        #Now we calculate the weighted cosine similarity between the query and the documents
+        #First we calculate the general information term
+        information_term = cosine_similarity(query_tfIdf_vector, tfIdf_description_matrix)[0] + cosine_similarity(query_tfIdf_vector, tfIdf_courseName_matrix)[0] + cosine_similarity(query_tfIdf_vector, tfIdf_facultyName_matrix)[0]
+        #Here we multiply the general information term with a normalization factor of 1/9
+        information_term = (1/9)*information_term
+
+        #Now we calculate the location term
+        location_term = cosine_similarity(query_tfIdf_vector, tfIdf_universityName_matrix)[0] + cosine_similarity(query_tfIdf_vector, tfIdf_city_matrix)[0] + cosine_similarity(query_tfIdf_vector, tfIdf_country_matrix)[0]
+        #Here we multiply the location term with a normalization factor of 1/9
+        location_term = (1/9)*location_term
+
+        #We now return the weighted cosine similarity
+        return information_term + location_term
+
+    def __get_column_tfIdf_matrix(self, documents_index: List[int], column: str) -> csr_matrix:
+        """
+        Function that gets the tfIdf matrix of a column for the documents contained in the documents_index.
+
+        Args:
+            documents_index (List[int]): Index of the documents that contain ALL the words in the query.
+            column (str): Column of the dataset to get the tfIdf matrix.
+
+        Returns:
+            tfIdf_column_matrix (csr_matrix): TfIdf matrix of the column documents contained in the documents_index.
+        """
+
+        #We get the tfIdf matrix of the column documents contained in the documents_index
+        tfIdf_column_matrix = self.tfIdf_vectorizer.fit_transform(self.dataset.iloc[documents_index][column])
+
+        #We return the tfIdf matrix
+        return tfIdf_column_matrix

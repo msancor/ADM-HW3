@@ -19,6 +19,10 @@ This is a Github repository created to submit the third Homework of the **Algori
 
     - `data_preprocesser.py`: A Python file including a `DataPreprocesser` class designed to pre-process text data in order to obtain information and build a Search Engine.
 
+    - `search_engine.py`: A Python file including three classes: `SearchEngine`, `TopKSearchEngine`, and `WeightedTopKSearchEngine` designed to implement different versions of a Search Engine that queries information from our MSc. courses dataset.
+
+    - `map_plotter.py`: A Python file including a `MapPlotter` class designed to plot a map including the results of our Search Engines.
+
 4. `CommandLine.sh`: A bash script including the code to solve the *Command Line Question*.
 
 5. ``.gitignore``: A predetermined `.gitignore` file that tells Git which files or folders to ignore in a Python project.
@@ -67,6 +71,27 @@ df.head()
 
 Take into account this script will take $\sim 11$ hours so run it only if necessary.
 
+## API Usage
+
+In order to plot a map with our results using the `MapPlotter` class defined before we used two external API's:
+
+- [Google Maps API](https://mapsplatform.google.com/pricing/)
+
+- [Mapbox API](https://docs.mapbox.com/api/overview/)
+
+In order to gain access to these API's we had to create accounts and obtain **API keys** from each API. These keys were stored in a `.env` file and then read directly into the `map_plotter.py` module. Because of privacy issues this file is not included in our repository but can be recreated by any user with their own API keys. To do this follow these steps:
+
+1. Obtain API keys for both the [Google Maps API](https://mapsplatform.google.com/pricing/) and [Mapbox API](https://docs.mapbox.com/api/overview/).
+
+2. Create a `.env` file including the following:
+
+    ```shell
+    GOOGLE_API_KEY =
+    MAPBOX_API_KEY =
+    ```
+
+    and write your API keys in the other side of the equal sign.
+
 
 ## Important Note
 
@@ -77,6 +102,8 @@ If the Notebook doesn't load through Github please try all of these steps:
 2. Try downloading the Notebook and opening it in your local computer.
 
 3. Try opening it through Google Colab through the following link.
+
+**NOTE:** Since Plotly Express maps are not compiled well through NBViewer or Github, we recommend downloading the Notebook for a better visualization.
 
 ---
 
