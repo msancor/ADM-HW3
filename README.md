@@ -108,9 +108,10 @@ Since Plotly Express maps are not compiled well through NBViewer or Github, we r
 <p align="center">
     <img src="https://drive.google.com/uc?export=view&id=1wZGgqas_bm-nRbe2tS0nEXHwfLrqbVSg" width="800" height="400"/>
 </p>
----
 
 However, this plot is made to be interactive so it is still recommended to visualize it in your own computer.
+
+---
 
 **Author:** Miguel Angel Sanchez Cortes
 
